@@ -3,12 +3,9 @@ package org.resolvetosavelives.red.newentry.search
 import io.reactivex.Completable
 import io.reactivex.Observable
 import io.reactivex.Single
-import io.reactivex.rxkotlin.toObservable
 import org.resolvetosavelives.red.AppDatabase
 import org.resolvetosavelives.red.di.AppScope
 import org.resolvetosavelives.red.newentry.search.SyncStatus.DONE
-import org.resolvetosavelives.red.newentry.search.SyncStatus.INVALID
-import org.resolvetosavelives.red.newentry.search.SyncStatus.IN_FLIGHT
 import org.resolvetosavelives.red.newentry.search.SyncStatus.PENDING
 import org.resolvetosavelives.red.sync.patient.PatientPayload
 import org.resolvetosavelives.red.util.LocalDateRoomTypeConverter
@@ -34,10 +31,10 @@ class PatientRepository @Inject constructor(private val database: AppDatabase) {
         .toObservable()
   }
 
-  fun patientCount(): Observable<Int> {
+  fun patientCount(): Single<Int> {
     return database.patientDao()
         .patientCount()
-        .toObservable()
+        .firstOrError()
   }
 
   fun searchPatientsWithAddresses(query: String): Observable<List<PatientWithAddress>> {
@@ -71,29 +68,18 @@ class PatientRepository @Inject constructor(private val database: AppDatabase) {
     return Completable.fromAction({ database.patientDao().save(patient) })
   }
 
-  fun mergeWithLocalData(payloadsFromServer: List<PatientPayload>): Completable {
-    return payloadsFromServer
-        .toObservable()
-        .filter { payload ->
-          val localCopy = database.patientDao().get(payload.uuid)
-          when (localCopy?.syncStatus) {
-            PENDING -> false
-            IN_FLIGHT -> false
-            INVALID -> true
-            DONE -> true
-            null -> true
-          }
-        }
-        .toList()
-        .flatMapCompletable { payloads ->
-          Completable.fromAction {
-            val newOrUpdatedAddresses = payloads.map { it.address.toDatabaseModel() }
-            database.addressDao().save(newOrUpdatedAddresses)
+  fun patient(uuid: String): Patient? {
+    return database.patientDao().get(uuid)
+  }
 
-            val newOrUpdatedPatients = payloads.map { it.toDatabaseModel(DONE) }
-            database.patientDao().save(newOrUpdatedPatients)
-          }
-        }
+  fun save(payloads: List<PatientPayload>): Completable {
+    return Completable.fromAction {
+      val newOrUpdatedAddresses = payloads.map { it.address.toDatabaseModel() }
+      database.addressDao().save(newOrUpdatedAddresses)
+
+      val newOrUpdatedPatients = payloads.map { it.toDatabaseModel(DONE) }
+      database.patientDao().save(newOrUpdatedPatients)
+    }
   }
 
   fun ongoingEntry(): Single<OngoingPatientEntry> {

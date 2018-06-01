@@ -7,6 +7,7 @@ import org.resolvetosavelives.red.newentry.search.Patient
 import org.resolvetosavelives.red.newentry.search.PatientAddress
 import org.resolvetosavelives.red.newentry.search.PatientStatus
 import org.resolvetosavelives.red.newentry.search.SyncStatus
+import org.resolvetosavelives.red.sync.DataSync
 import org.threeten.bp.Instant
 import org.threeten.bp.LocalDate
 
@@ -14,7 +15,7 @@ import org.threeten.bp.LocalDate
 data class PatientPayload(
 
     @Json(name = "id")
-    val uuid: String,
+    override val uuid: String,
 
     @Json(name = "full_name")
     val fullName: String,
@@ -39,7 +40,7 @@ data class PatientPayload(
 
     @Json(name = "address")
     val address: PatientAddressPayload
-) {
+) : DataSync.Synceable {
 
   fun toDatabaseModel(updatedStatus: SyncStatus): Patient {
     return Patient(

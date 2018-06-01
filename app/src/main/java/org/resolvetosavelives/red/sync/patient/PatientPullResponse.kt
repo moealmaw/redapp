@@ -2,14 +2,16 @@ package org.resolvetosavelives.red.sync.patient
 
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
+import org.resolvetosavelives.red.sync.DataSync
 import org.threeten.bp.Instant
 
 @JsonClass(generateAdapter = true)
 data class PatientPullResponse(
 
     @Json(name = "patients")
-    val patients: List<PatientPayload>,
+    override val records: List<PatientPayload>,
 
     @Json(name = "processed_since")
-    val latestRecordTimestamp: Instant
-)
+    override val latestRecordTimestamp: Instant
+
+) : DataSync.DataPullResponse<PatientPayload>

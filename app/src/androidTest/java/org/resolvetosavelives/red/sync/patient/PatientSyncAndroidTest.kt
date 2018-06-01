@@ -1,4 +1,4 @@
-package org.resolvetosavelives.red.sync
+package org.resolvetosavelives.red.sync.patient
 
 import android.support.test.runner.AndroidJUnit4
 import com.f2prateek.rx.preferences2.Preference
@@ -16,7 +16,7 @@ import org.resolvetosavelives.red.newentry.search.Gender
 import org.resolvetosavelives.red.newentry.search.OngoingPatientEntry
 import org.resolvetosavelives.red.newentry.search.PatientRepository
 import org.resolvetosavelives.red.newentry.search.SyncStatus
-import org.resolvetosavelives.red.sync.patient.PatientSync
+import org.resolvetosavelives.red.sync.SyncConfig
 import org.resolvetosavelives.red.util.Just
 import org.resolvetosavelives.red.util.Optional
 import org.threeten.bp.Instant
@@ -86,7 +86,7 @@ class PatientSyncAndroidTest {
 
     patientSync.pull().blockingAwait()
 
-    val patientCountAfterPull = repository.patientCount().blockingFirst()
+    val patientCountAfterPull = repository.patientCount().blockingGet()
     assertThat(patientCountAfterPull).isAtLeast(patientsToInsert)
   }
 

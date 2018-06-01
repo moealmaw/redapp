@@ -3,7 +3,6 @@ package org.resolvetosavelives.red.sync
 import io.reactivex.Single
 import org.resolvetosavelives.red.sync.patient.PatientPullResponse
 import org.resolvetosavelives.red.sync.patient.PatientPushRequest
-import org.resolvetosavelives.red.sync.patient.PatientPushResponse
 import org.threeten.bp.Instant
 import retrofit2.http.Body
 import retrofit2.http.GET
@@ -19,17 +18,17 @@ interface SyncApiV1 {
   @POST("$version/patients/sync")
   fun push(
       @Body body: PatientPushRequest
-  ): Single<PatientPushResponse>
+  ): Single<DataPushResponse>
 
   @GET("$version/patients/sync")
   fun pull(
-      @Query("limit") recordsToRetrieve: Int,
-      @Query("first_time") isFirstSync: Boolean
+      @Query("limit") recordsToPull: Int,
+      @Query("first_time") isFirstPull: Boolean
   ): Single<PatientPullResponse>
 
   @GET("$version/patients/sync")
   fun pull(
-      @Query("limit") recordsToRetrieve: Int,
+      @Query("limit") recordsToPull: Int,
       @Query("processed_since") latestRecordTimestamp: Instant? = null
   ): Single<PatientPullResponse>
 }
