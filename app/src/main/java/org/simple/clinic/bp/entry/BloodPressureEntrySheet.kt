@@ -59,6 +59,10 @@ class BloodPressureEntrySheet : BottomSheetActivity() {
     super.onDestroy()
   }
 
+  fun advanceCursor() {
+    diastolicEditText.requestFocus()
+  }
+
   private fun sheetCreates(): Observable<UiEvent> {
     val patientUuid = intent.extras.getSerializable(KEY_PATIENT_UUID) as UUID
     return Observable.just(BloodPressureEntrySheetCreated(patientUuid))

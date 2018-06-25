@@ -17,7 +17,27 @@ class BloodPressureEntrySheetController @Inject constructor(val repository: Bloo
   override fun apply(events: Observable<UiEvent>): ObservableSource<UiChange> {
     val replayedEvents = events.replay(1).refCount()
 
-    return Observable.mergeArray(handleImeOptionClicks(replayedEvents))
+    return Observable.mergeArray(
+      handleImeOptionClicks(replayedEvents),
+      advanceCursor(replayedEvents))
+  }
+
+  private fun shouldAdvanceCursor(systolicText: String): Boolean {
+    return (systolicText.length == 3 && systolicText.matches("^[12].*$".toRegex()))
+      || (systolicText.length == 2 && systolicText.matches("^[3-9].*$".toRegex()))
+  }
+
+  private fun advanceCursor(events: Observable<UiEvent>): Observable<UiChange> {
+    return events
+      .ofType<BloodPressureSystolicTextChanged>()
+      .distinctUntilChanged()
+      .map<UiChange> {
+        if (shouldAdvanceCursor(it.systolic)) {
+          { ui: Ui -> ui.advanceCursor() }
+        } else {
+          { }
+        }
+      }
   }
 
   private fun handleImeOptionClicks(events: Observable<UiEvent>): Observable<UiChange> {
